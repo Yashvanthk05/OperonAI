@@ -1,15 +1,4 @@
-from agent.computer_use_agent import (
-    AgentConfig,
-    AgentStep,
-    ComputerUseAgent,
-    create_agent,
-    run_computer_use_task,
-)
+from agent.config import AgentConfig, AgentStep
+from agent.loop import ComputerUseAgent
 
-__all__ = [
-    "AgentConfig",
-    "AgentStep",
-    "ComputerUseAgent",
-    "create_agent",
-    "run_computer_use_task",
-]
+__all__ = ["AgentConfig", "AgentStep", "ComputerUseAgent"]
