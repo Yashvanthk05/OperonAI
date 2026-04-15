@@ -10,13 +10,27 @@ A Windows computer-use AI agent that autonomously interacts with the desktop to 
 ## Quick Start
 
 ```bash
-pip install -e .
+uv sync
 
 ollama pull llama3
 ollama pull llava
 
-python main.py "open notepad and type hello world"
-python main.py "open calculator" --max-iterations 10
+uv run python main.py "open notepad and type hello world"
+uv run python main.py "open calculator" --max-iterations 10
+```
+
+## Voice Launcher
+
+Use the helper launcher if you want voice-first prompt entry:
+
+```bash
+uv run python tmp.py
+```
+
+It waits for Enter, captures speech, converts it to text, and then runs:
+
+```bash
+uv run python main.py "<recognized or typed instruction>"
 ```
 
 ## Automation Stack

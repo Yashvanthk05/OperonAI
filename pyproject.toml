@@ -10,9 +10,12 @@ dependencies = [
     "pyautogui>=0.9.54",
     "pydantic>=2.13.0",
     "pydantic-settings>=2.13.1",
+    "pyaudio>=0.2.14",
+    "pyttsx3>=2.99",
     "python-dotenv>=1.2.2",
     "pywin32>=311",
     "pywinauto>=0.6.9",
     "requests>=2.33.1",
+    "SpeechRecognition>=3.14.3",
     "uiautomation>=2.0.0",
 ]

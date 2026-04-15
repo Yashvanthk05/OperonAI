@@ -7,3 +7,6 @@ pywin32
 pydantic
 pydantic-settings
 python-dotenv
+SpeechRecognition
+pyttsx3
+pyaudio
