@@ -1,5 +1,3 @@
-"""Mouse click and cursor movement actions."""
-
 import time
 from typing import Any, Optional, Tuple
 
@@ -9,9 +7,6 @@ from actions.element_lookup import (
     find_by_index,
     find_by_name,
     find_by_uiautomation,
-    go_to_excel_cell,
-    is_excel_active,
-    is_excel_reference,
 )
 from core.models import DesktopState
 from core.types import ActionResult
@@ -22,7 +17,7 @@ pyautogui.PAUSE = 0.3
 
 
 def _move_and_click(x: int, y: int, button: str = "left", clicks: int = 1) -> None:
-    """Move to (x, y) and perform the requested click(s)."""
+    
     pyautogui.moveTo(x, y, duration=0.2)
     time.sleep(0.1)
     if clicks == 2:
@@ -41,24 +36,14 @@ def click(
     button: str = "left",
     clicks: int = 1,
 ) -> ActionResult:
-    """Click on a target found by index, name, uiautomation, coordinates, or vision.
-
-    Resolution order:
-      1. Numeric index (int or string like "0")
-      2. pywinauto UI tree name match
-      3. Excel cell reference (if Excel is active)
-      4. uiautomation package
-      5. Vision model (if screenshot available)
-    """
+    
     x: Optional[int] = None
     y: Optional[int] = None
     description = ""
 
-    # Coerce string-encoded integers: LLM often sends "0" instead of 0
     if isinstance(target, str) and target.strip().isdigit():
         target = int(target.strip())
 
-    # --- Target is an element index ---
     if isinstance(target, int):
         result = find_by_index(state, target)
         if not result:
@@ -67,20 +52,13 @@ def click(
         x, y = box.center
         description = f"{el.control_type}: '{el.name}'"
 
-    # --- Target is a name string ---
     elif isinstance(target, str):
-        # 1) pywinauto tree
         result = find_by_name(state, target)
         if result:
             el, box = result
             x, y = box.center
             description = f"{el.control_type}: '{el.name}'"
 
-        # 2) Excel cell reference
-        elif is_excel_active(state) and is_excel_reference(target):
-            return go_to_excel_cell(target)
-
-        # 3) uiautomation fallback
         else:
             coords = find_by_uiautomation(target)
             if coords:

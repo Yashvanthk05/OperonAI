@@ -1,5 +1,3 @@
-"""Keyboard input actions: typing, key presses, and shortcuts."""
-
 import pyautogui
 
 from core.types import ActionResult
@@ -9,7 +7,7 @@ pyautogui.PAUSE = 0.3
 
 
 def type_text(text: str, clear_first: bool = False) -> ActionResult:
-    """Type a string of text. Optionally clear the field first."""
+
     try:
         if clear_first:
             pyautogui.hotkey("ctrl", "a")
@@ -22,7 +20,7 @@ def type_text(text: str, clear_first: bool = False) -> ActionResult:
 
 
 def press_key(key: str) -> ActionResult:
-    """Press a single key (e.g. 'enter', 'tab', 'escape')."""
+
     try:
         pyautogui.press(key)
         return ActionResult(True, f"Pressed: {key}")
@@ -31,7 +29,7 @@ def press_key(key: str) -> ActionResult:
 
 
 def send_shortcut(*keys: str) -> ActionResult:
-    """Send a keyboard shortcut (e.g. send_shortcut('ctrl', 'c'))."""
+    
     try:
         pyautogui.hotkey(*keys)
         return ActionResult(True, f"Sent: {'+'.join(keys)}")

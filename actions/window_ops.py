@@ -1,7 +1,6 @@
-"""Window management and wait actions."""
-
 import time
 
+import pyautogui
 import win32con
 import win32gui
 
@@ -10,22 +9,38 @@ from core.models import DesktopState
 from core.types import ActionResult
 
 
-def find_and_focus_window(
-    window_title: str,
-    state: DesktopState,
-    element_name: str | None = None,
-) -> ActionResult:
-    """Find a window by title substring, bring it to the foreground,
-    and optionally click a named element inside it.
-    """
+def _ensure_focus(hwnd: int) -> None:
+
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+    except Exception:
+        pass
+
+    try:
+        win32gui.BringWindowToTop(hwnd)
+    except Exception:
+        pass
+
+    try:
+        win32gui.SetForegroundWindow(hwnd)
+    except Exception:
+        pass
+
+
+def find_and_focus_window(window_title: str, state: DesktopState, element_name: str | None = None) -> ActionResult:
+    
     for window in state.windows:
         if window_title.lower() not in window.title.lower():
             continue
 
         try:
-            win32gui.ShowWindow(window.handle, win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(window.handle)
-            time.sleep(0.5)
+            _ensure_focus(window.handle)
+            time.sleep(0.15)
+
+            try:
+                win32gui.ShowWindow(window.handle, win32con.SW_MAXIMIZE)
+            except Exception:
+                pass
 
             if element_name:
                 for el in state.interactive_elements:
@@ -45,7 +60,6 @@ def find_and_focus_window(
         except Exception as exc:
             return ActionResult(False, f"Window found but focus failed: {exc}")
 
-    # Fallback: try uiautomation package for windows not in the tree
     try:
         import uiautomation as auto
 
@@ -54,6 +68,17 @@ def find_and_focus_window(
         )
         if win.Exists(maxSearchSeconds=3):
             win.SetActive()
+            try:
+                win.Maximize()
+            except Exception:
+                pass
+            hwnd = int(getattr(win, "NativeWindowHandle", 0) or 0)
+            if hwnd:
+                _ensure_focus(hwnd)
+                try:
+                    win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+                except Exception:
+                    pass
             return ActionResult(
                 True, f"Focused window via uiautomation: {window_title}"
             )
@@ -64,6 +89,6 @@ def find_and_focus_window(
 
 
 def wait(seconds: float) -> ActionResult:
-    """Pause execution for the specified number of seconds."""
+
     time.sleep(seconds)
     return ActionResult(True, f"Waited {seconds}s")

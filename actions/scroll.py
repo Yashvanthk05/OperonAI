@@ -1,12 +1,10 @@
-"""Mouse scroll actions."""
-
 import pyautogui
 
 from core.types import ActionResult
 
 
 def scroll(direction: str, amount: int = 3) -> ActionResult:
-    """Scroll the mouse wheel in the given direction."""
+
     try:
         if direction == "down":
             pyautogui.scroll(-amount)

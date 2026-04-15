@@ -1,9 +1,3 @@
-"""Central action dispatcher — routes action type strings to handler functions.
-
-Normalizes LLM output variants (camelCase, compound names) so that
-e.g. "pressEnter", "press_enter", "openApp" all route correctly.
-"""
-
 import re
 from typing import Any
 
@@ -17,24 +11,15 @@ from core.types import ActionResult
 
 
 def _normalize_action(raw: Any) -> tuple[str, str | None]:
-    """Normalize an LLM action string into (action, embedded_value).
-
-    Examples:
-        "pressEnter"  → ("press", "enter")
-        "openApp"     → ("open_app", None)
-        "type_text"   → ("type", None)
-        "double_click"→ ("double_click", None)
-    """
+    
     raw_str = str(raw) if raw is not None else ""
-    # Convert camelCase → snake_case: "pressEnter" → "press_enter"
+    
     snake = re.sub(r"(?<=[a-z])(?=[A-Z])", "_", raw_str).lower().strip()
 
-    # Handle compound press actions: "press_enter" → press("enter")
     if snake.startswith("press_") and snake not in ("press_key",):
-        key = snake[6:]  # everything after "press_"
+        key = snake[6:]
         return "press", key
 
-    # Normalize common aliases
     aliases = {
         "type_text": "type",
         "write": "type",
@@ -59,15 +44,8 @@ def _normalize_action(raw: Any) -> tuple[str, str | None]:
     return aliases.get(snake, snake), None
 
 
-def execute_action(
-    action_type: str,
-    action_value: Any,
-    state: DesktopState,
-) -> ActionResult:
-    """Route an action string to the appropriate handler function.
-
-    Handles LLM output variants like "pressEnter", "openApp", "type_text".
-    """
+def execute_action(action_type: str, action_value: Any, state: DesktopState) -> ActionResult:
+    
     action, embedded_value = _normalize_action(action_type)
 
     if action == "click":
@@ -80,6 +58,17 @@ def execute_action(
         return click(state, action_value, button="right")
 
     if action == "type":
+        if isinstance(action_value, dict):
+            focus_target = action_value.get("target")
+            text_value = action_value.get("text", "")
+
+            if focus_target not in (None, ""):
+                focus_result = click(state, focus_target)
+                if not focus_result.success:
+                    return ActionResult(False, f"Type focus failed: {focus_result.message}")
+
+            return type_text(str(text_value))
+
         return type_text(str(action_value))
 
     if action == "scroll":
@@ -105,7 +94,7 @@ def execute_action(
         return ActionResult(False, "Shortcut keys required")
 
     if action == "press":
-        # Use embedded value from compound name (e.g. "pressEnter" → "enter")
+        
         key = embedded_value or str(action_value)
         return press_key(key)
 

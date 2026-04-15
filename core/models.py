@@ -1,5 +1,3 @@
-"""Core data models used across the entire application."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,8 +8,6 @@ from PIL import Image
 
 @dataclass
 class BoundingBox:
-    """Rectangular region on screen defined by pixel coordinates."""
-
     left: int
     top: int
     right: int
@@ -39,8 +35,6 @@ class BoundingBox:
 
 @dataclass
 class UIElement:
-    """A single UI control discovered via the accessibility tree."""
-
     name: str
     control_type: str
     automation_id: str
@@ -53,8 +47,6 @@ class UIElement:
 
 @dataclass
 class WindowInfo:
-    """Metadata about a visible desktop window."""
-
     handle: int
     title: str
     class_name: str
@@ -66,8 +58,6 @@ class WindowInfo:
 
 @dataclass
 class DesktopState:
-    """Complete snapshot of the current desktop: windows, elements, screenshot."""
-
     screenshot: Optional[Image.Image] = None
     screenshot_base64: Optional[str] = None
     windows: List[WindowInfo] = field(default_factory=list)

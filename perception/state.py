@@ -1,5 +1,3 @@
-"""Orchestrate all perception modules into a single desktop snapshot."""
-
 from __future__ import annotations
 
 import base64
@@ -14,16 +12,13 @@ from perception.ui_tree import build_ui_tree, collect_interactive_elements
 from perception.windows import enumerate_windows, get_active_window, get_cursor_position
 
 
-def capture_desktop_state(
-    use_vision: bool = False,
-    scale: float = 1.0,
-) -> DesktopState:
-    """Capture the full desktop state: windows, UI tree, and optionally a screenshot."""
+def capture_desktop_state(use_vision: bool = False, scale: float = 1.0,) -> DesktopState:
+    
     cursor = get_cursor_position()
     windows = enumerate_windows()
     active = get_active_window()
 
-    ui_tree = build_ui_tree(windows)
+    ui_tree = build_ui_tree(windows, active_window=active)
     elements = collect_interactive_elements(ui_tree) if ui_tree else []
 
     screenshot = None
@@ -62,24 +57,43 @@ def capture_desktop_state(
     )
 
 
+def _safe_text(value: str) -> str:
+
+    text = (value or "").replace("\n", " ").replace("\r", " ").strip()
+    return text if text else "-"
+
+
 def elements_to_text(elements: List[UIElement], max_items: int = 50) -> str:
-    """Format interactive elements as indexed text for LLM prompts."""
+    
     lines: List[str] = []
+    if not elements:
+        return "(no interactive elements)"
+
     for i, el in enumerate(elements[:max_items]):
         cx, cy = el.bounding_box.center
-        lines.append(f"[{i}] {el.control_type}: '{el.name}' @ ({cx}, {cy})")
-        if el.automation_id:
-            lines.append(f"    automation_id={el.automation_id}")
+        lines.append(
+            f"[{i}] control={_safe_text(el.control_type)} "
+            f"name='{_safe_text(el.name)}' "
+            f"window='{_safe_text(el.window_name)}' "
+            f"class='{_safe_text(el.class_name)}' "
+            f"automation_id='{_safe_text(el.automation_id)}' "
+            f"center=({cx}, {cy}) "
+            f"bbox=({el.bounding_box.left}, {el.bounding_box.top}, "
+            f"{el.bounding_box.right}, {el.bounding_box.bottom})"
+        )
 
     if len(elements) > max_items:
-        lines.append(f"... ({len(elements) - max_items} more elements)")
+        lines.append(f"({len(elements) - max_items} more elements)")
 
     return "\n".join(lines)
 
 
 def windows_to_text(windows: List[WindowInfo]) -> str:
-    """Format a window list as text for LLM prompts."""
+    
     lines: List[str] = []
+    if not windows:
+        return "(no visible windows)"
+
     for i, w in enumerate(windows):
         if w.is_minimized:
             status = "MINIMIZED"
@@ -89,7 +103,10 @@ def windows_to_text(windows: List[WindowInfo]) -> str:
             status = "NORMAL"
 
         lines.append(
-            f"[{i}] '{w.title}' ({w.class_name}) - {status} "
-            f"@ ({w.bounding_box.left}, {w.bounding_box.top})"
+            f"[{i}] title='{_safe_text(w.title)}' "
+            f"class='{_safe_text(w.class_name)}' "
+            f"hwnd={w.handle} pid={w.process_id} state={status} "
+            f"bbox=({w.bounding_box.left}, {w.bounding_box.top}, "
+            f"{w.bounding_box.right}, {w.bounding_box.bottom})"
         )
     return "\n".join(lines)

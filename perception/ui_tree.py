@@ -1,5 +1,3 @@
-"""Build the UI accessibility tree using pywinauto's UIA backend."""
-
 from __future__ import annotations
 
 from typing import List, Optional
@@ -9,7 +7,6 @@ from pywinauto import Desktop
 
 from core.models import BoundingBox, UIElement, WindowInfo
 
-# Control types considered interactive (clickable / editable)
 INTERACTIVE_TYPES = {
     "Button", "CheckBox", "ComboBox", "Edit", "Hyperlink",
     "List", "ListItem", "Menu", "MenuItem", "RadioButton",
@@ -17,29 +14,32 @@ INTERACTIVE_TYPES = {
     "SplitButton", "Tree", "TreeItem", "Custom",
 }
 
-# Structural types that are never directly interactive
 STRUCTURAL_TYPES = {
     "Pane", "Group", "Header", "HeaderItem", "ScrollBar",
     "Thumb", "TitleBar", "Separator",
 }
 
+NON_ACTIONABLE_TYPES = {
+    "Window",
+    "Desktop",
+}
+
 
 def is_interactive(control_type: str, name: str) -> bool:
-    """Decide whether a control should appear in the interactive-elements list."""
-    if control_type in STRUCTURAL_TYPES:
+
+    control = (control_type or "").strip()
+
+    if control in STRUCTURAL_TYPES or control in NON_ACTIONABLE_TYPES:
         return False
-    if control_type in INTERACTIVE_TYPES:
+    if control == "Button" and name in ("Close", "Minimize", "Maximize", "Restore"):
+        return False
+    if control in INTERACTIVE_TYPES:
         return True
     return bool(name.strip())
 
 
-def build_element(
-    wrapper,
-    max_depth: int,
-    window_handle: int,
-    window_name: str,
-) -> Optional[UIElement]:
-    """Recursively convert a pywinauto wrapper into a UIElement."""
+def build_element(wrapper, max_depth: int, window_handle: int, window_name: str) -> Optional[UIElement]:
+    
     try:
         rect = wrapper.rectangle()
         box = BoundingBox(rect.left, rect.top, rect.right, rect.bottom)
@@ -50,9 +50,7 @@ def build_element(
             info = wrapper.element_info
             control_type = getattr(info, "control_type", "") or ""
             automation_id = getattr(info, "automation_id", "") or ""
-            class_name = (
-                getattr(info, "class_name", "") or wrapper.class_name() or ""
-            )
+            class_name = (getattr(info, "class_name", "") or wrapper.class_name() or "")
         except Exception:
             control_type, automation_id, class_name = "", "", ""
 
@@ -82,15 +80,15 @@ def build_element(
         return None
 
 
-def build_ui_tree(
-    windows: List[WindowInfo], max_depth: int = 3
-) -> Optional[UIElement]:
-    """Build the full UI tree for all visible windows."""
+def build_ui_tree(windows: List[WindowInfo], active_window: Optional[WindowInfo] = None, max_depth: int = 3) -> Optional[UIElement]:
+    
     try:
         desktop = Desktop(backend="uia")
         children: List[UIElement] = []
 
-        for window in windows:
+        target_windows = [active_window] if active_window else windows
+
+        for window in target_windows:
             try:
                 wrapper = desktop.window(handle=window.handle)
                 if not wrapper.exists(timeout=0.5):
@@ -123,7 +121,7 @@ def build_ui_tree(
 def collect_interactive_elements(
     element: Optional[UIElement], depth: int = 0
 ) -> List[UIElement]:
-    """Flatten the UI tree to a list of interactive elements only."""
+    
     if not element:
         return []
 
