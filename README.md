@@ -2,14 +2,6 @@
 
 A Windows computer-use AI agent that autonomously interacts with the desktop to complete natural-language tasks.
 
-## How It Works
-
-```
-{User Instruction → LLM Planner → Action Dispatcher → Desktop
-                        ↑                                |
-                        └──── Perception (UI tree) ──────┘
-```}
-
 1. **Perception** captures the current desktop state — open windows, interactive UI elements, and optionally a screenshot.
 2. **Planner** sends the state and task to a local LLM (via Ollama) to generate a sequence of actions.
 3. **Actions** execute each step (click, type, open app, etc.) using `pyautogui`, `pywinauto`, `uiautomation`, and Win32 APIs.
