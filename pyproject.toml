@@ -1,0 +1,17 @@
+[project]
+name = "operon"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mss>=10.1.0",
+    "pillow>=12.2.0",
+    "pyautogui>=0.9.54",
+    "pydantic>=2.13.0",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.2",
+    "pywin32>=311",
+    "pywinauto>=0.6.9",
+    "requests>=2.33.1",
+]

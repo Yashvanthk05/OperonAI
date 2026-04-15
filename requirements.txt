@@ -1,0 +1,9 @@
+pywinauto
+pyautogui
+mss
+Pillow
+requests
+pywin32
+pydantic
+pydantic-settings
+python-dotenv
