@@ -123,7 +123,4 @@ def execute_action(
     if action == "done":
         return ActionResult(True, "Task completed")
 
-    if action == "excel_random_marks_stats":
-        return excel_random_marks_stats(action_value)
-
     return ActionResult(False, f"Unknown action: {action_type}")
