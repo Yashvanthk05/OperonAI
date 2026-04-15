@@ -48,3 +48,4 @@ All settings are in `.env`:
 | `TEXT_MODEL`     | `llama3`                   | LLM for plan generation          |
 | `VISION_MODEL`   | `llava`                   | Vision model for screenshots     |
 | `MAX_ITERATIONS` | `15`                      | Max agent loop iterations        |
+# OperonAI
