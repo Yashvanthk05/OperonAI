@@ -1,8 +1,17 @@
+"""Operon — Windows computer-use AI agent.
+
+Usage:
+    python main.py "open notepad and type hello world"
+    python main.py "open calculator" --max-iterations 10
+"""
+
 import argparse
-from agent.computer_use_agent import AgentConfig, ComputerUseAgent
+
+from agent.config import AgentConfig
+from agent.loop import ComputerUseAgent
 
 
-def build_parser() -> argparse.ArgumentParser:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Operon computer-use agent")
     parser.add_argument(
         "instruction",
@@ -12,34 +21,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Natural language instruction for the agent",
     )
     parser.add_argument(
-        "--max-iterations", type=int, default=15, help="Maximum agent iterations"
+        "--max-iterations",
+        type=int,
+        default=15,
+        help="Maximum agent loop iterations (default: 15)",
     )
-    parser.add_argument(
-        "--scale", type=float, default=0.6, help="Screenshot scale factor (0.1-1.0)"
-    )
-    parser.add_argument(
-        "--no-verify", action="store_true", help="Skip action verification"
-    )
-    return parser
 
-
-def main(argv: list[str] | None = None) -> int:
-    parser = build_parser()
     args = parser.parse_args(argv)
 
-    try:
-        if not args.instruction:
-            parser.print_help()
-            return 1
+    if not args.instruction:
+        parser.print_help()
+        return 1
 
-        print("Starting computer-use agent...")
-        config = AgentConfig(
-            max_iterations=args.max_iterations,
-            scale=args.scale,
-            verify_actions=not args.no_verify,
-        )
+    try:
+        config = AgentConfig(max_iterations=args.max_iterations)
         agent = ComputerUseAgent(config)
         success, steps = agent.run(args.instruction)
+
         if success:
             print("Task run finished.")
         else:
@@ -53,7 +51,6 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(f"Run failed: {exc}")
         import traceback
-
         traceback.print_exc()
         return 1
 
