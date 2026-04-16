@@ -70,20 +70,14 @@ def elements_to_text(elements: List[UIElement], max_items: int = 50) -> str:
         return "(no interactive elements)"
 
     for i, el in enumerate(elements[:max_items]):
-        cx, cy = el.bounding_box.center
+        # Keep the representation minimal and highly readable for LLM
         lines.append(
-            f"[{i}] control={_safe_text(el.control_type)} "
-            f"name='{_safe_text(el.name)}' "
-            f"window='{_safe_text(el.window_name)}' "
-            f"class='{_safe_text(el.class_name)}' "
-            f"automation_id='{_safe_text(el.automation_id)}' "
-            f"center=({cx}, {cy}) "
-            f"bbox=({el.bounding_box.left}, {el.bounding_box.top}, "
-            f"{el.bounding_box.right}, {el.bounding_box.bottom})"
+            f"[{i}] type='{_safe_text(el.control_type)}' "
+            f"name='{_safe_text(el.name)}'"
         )
 
     if len(elements) > max_items:
-        lines.append(f"({len(elements) - max_items} more elements)")
+        lines.append(f"... ({len(elements) - max_items} more elements)")
 
     return "\n".join(lines)
 

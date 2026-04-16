@@ -22,7 +22,11 @@ def type_text(text: str, clear_first: bool = False) -> ActionResult:
 def press_key(key: str) -> ActionResult:
 
     try:
-        pyautogui.press(key)
+        if "+" in key:
+            keys = [k.strip() for k in key.split("+")]
+            pyautogui.hotkey(*keys)
+        else:
+            pyautogui.press(key)
         return ActionResult(True, f"Pressed: {key}")
     except Exception as exc:
         return ActionResult(False, f"Press failed: {exc}")

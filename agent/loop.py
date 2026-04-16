@@ -36,10 +36,10 @@ class ComputerUseAgent:
             self.last_screenshot = self.state.screenshot.copy()
         return self.state
 
-    def execute_plan(self, plan: List[Dict]) -> bool:
+    def execute_plan(self, plan: List[Dict]) -> Tuple[bool, Optional[str]]:
         
         if not plan:
-            return True
+            return True, None
 
         def _short(value, max_len: int = 120) -> str:
             text = repr(value)
@@ -83,14 +83,11 @@ class ComputerUseAgent:
 
             action_value = target
             if action_type == "type":
+                
                 text_to_type = value if value not in ("", None) else target
-                focus_target = target if value not in ("", None) else None
-                action_value = {
-                    "target": focus_target,
-                    "text": text_to_type,
-                }
+                action_value = str(text_to_type) if text_to_type not in ("", None) else ""
 
-            # Optimization: avoid repeatedly launching an app that is already open.
+
             if action_type == "open_app" and isinstance(action_value, str) and self.state:
                 tokens = _app_tokens(action_value)
 
@@ -163,7 +160,9 @@ class ComputerUseAgent:
             if self.iteration >= self.config.max_iterations:
                 break
 
-        return all_ok
+            last_msg = f"{status}: {result.message}"
+
+        return all_ok, last_msg if 'last_msg' in locals() else None
 
     def verify_completion(self, task: str) -> Tuple[bool, str]:
         
@@ -184,6 +183,7 @@ class ComputerUseAgent:
         empty_streak = 0
         repeated_plan_streak = 0
         last_plan_signature = ""
+        last_action_result: Optional[str] = None
 
         def _tail_all_same(items: List[str], count: int) -> bool:
             return len(items) >= count and len(set(items[-count:])) == 1
@@ -206,7 +206,7 @@ class ComputerUseAgent:
                 print(f"Active window: {self.state.active_window.title}")
 
             plan, error = generate_plan(
-                task, self.state, self.completed, self.failed
+                task, self.state, self.completed, self.failed, last_action_result
             )
 
             if error:
@@ -253,11 +253,13 @@ class ComputerUseAgent:
                 if len(self.failed) > 20:
                     self.failed = self.failed[-20:]
 
+                last_action_result = "FAIL: Repeated identical plan detected, planner is stuck."
                 self.iteration += 1
                 continue
 
             print(f"Plan: {len(plan)} action(s)")
-            self.execute_plan(plan)
+            all_ok, last_msg = self.execute_plan(plan[:1]) # Execute only the FIRST action
+            last_action_result = last_msg
             self.iteration += 1
 
             if self.task_completed:

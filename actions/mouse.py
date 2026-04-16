@@ -65,7 +65,6 @@ def click(
                 x, y = coords
                 description = f"uiautomation: '{target}'"
 
-            # 4) Vision model fallback
             elif state.screenshot:
                 vx, vy, reason = find_click_target(state.screenshot, target)
                 if vx is not None and vy is not None:
@@ -76,7 +75,6 @@ def click(
             else:
                 return ActionResult(False, f"Element '{target}' not found")
 
-    # --- Target is [x, y] coordinates ---
     elif isinstance(target, (tuple, list)) and len(target) == 2:
         x, y = int(target[0]), int(target[1])
         description = f"coordinates ({x}, {y})"
@@ -98,7 +96,7 @@ def move_cursor(
     start_x: int | None = None,
     start_y: int | None = None,
 ) -> ActionResult:
-    """Move the mouse cursor, or drag from one point to another."""
+    
     try:
         if drag and start_x is not None and start_y is not None:
             pyautogui.moveTo(start_x, start_y, duration=0.2)
