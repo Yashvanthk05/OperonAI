@@ -1,31 +1,12 @@
-"""Operon — Windows computer-use AI agent.
-
-Usage:
-    python main.py "open notepad and type hello world"
-    python main.py "open calculator" --max-iterations 10
-"""
-
 import argparse
 
 from agent.config import AgentConfig
 from agent.loop import ComputerUseAgent
 
-
-def main(argv: list[str] | None = None) -> int:
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Operon computer-use agent")
-    parser.add_argument(
-        "instruction",
-        type=str,
-        nargs="?",
-        default="",
-        help="Natural language instruction for the agent",
-    )
-    parser.add_argument(
-        "--max-iterations",
-        type=int,
-        default=15,
-        help="Maximum agent loop iterations (default: 15)",
-    )
+    parser.add_argument("instruction", type=str, nargs="?", default="", help="Natural language instruction for the agent")
+    parser.add_argument("--max-iterations", type=int, default=15, help="Maximum agent loop iterations (default: 15)")
 
     args = parser.parse_args(argv)
 
@@ -39,14 +20,14 @@ def main(argv: list[str] | None = None) -> int:
         success, steps = agent.run(args.instruction)
 
         if success:
-            print("Task run finished.")
+            print("Task run finished")
         else:
-            print("Stopped after max iterations.")
+            print("Stopped after max iterations")
         print(f"Steps executed: {len(steps)}")
         return 0
 
     except KeyboardInterrupt:
-        print("Stopped by user.")
+        print("Stopped by user")
         return 0
     except Exception as exc:
         print(f"Run failed: {exc}")
@@ -54,6 +35,5 @@ def main(argv: list[str] | None = None) -> int:
         traceback.print_exc()
         return 1
 
-
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

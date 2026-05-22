@@ -1,5 +1,3 @@
-"""Screenshot capture and annotation."""
-
 from __future__ import annotations
 
 from typing import List, Optional, Tuple
@@ -9,7 +7,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.models import BoundingBox, UIElement
 
-# Fixed palette for reproducible annotation colours
 ANNOTATION_COLORS = [
     "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
     "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9",
@@ -18,17 +15,15 @@ ANNOTATION_COLORS = [
 
 
 def capture_screenshot(monitor_index: int = 1) -> Image.Image:
-    """Grab the full screen and return it as a PIL Image."""
+    
     with mss.mss() as sct:
         monitor = sct.monitors[monitor_index]
         raw = sct.grab(monitor)
         return Image.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
 
 
-def _clamp_box(
-    box: BoundingBox, width: int, height: int
-) -> Optional[BoundingBox]:
-    """Clamp a bounding box to image dimensions; return None if too small."""
+def _clamp_box(box: BoundingBox, width: int, height: int) -> Optional[BoundingBox]:
+   
     left = max(0, min(box.left, width - 1))
     top = max(0, min(box.top, height - 1))
     right = max(0, min(box.right, width))
@@ -39,12 +34,8 @@ def _clamp_box(
     return clamped
 
 
-def annotate_screenshot(
-    screenshot: Image.Image,
-    elements: List[UIElement],
-    cursor_pos: Tuple[int, int],
-) -> Image.Image:
-    """Draw indexed bounding boxes and a cursor crosshair on a screenshot."""
+def annotate_screenshot(screenshot: Image.Image, elements: List[UIElement], cursor_pos: Tuple[int, int]) -> Image.Image:
+    
     annotated = screenshot.copy()
     draw = ImageDraw.Draw(annotated)
 
@@ -78,7 +69,6 @@ def annotate_screenshot(
             (clamped.left + 2, label_top + 1), label, fill="white", font=font
         )
 
-    # Cursor crosshair
     cx, cy = cursor_pos
     if 0 <= cx < screenshot.width and 0 <= cy < screenshot.height:
         r = 10

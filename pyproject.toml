@@ -5,6 +5,7 @@ description = "Windows computer-use AI agent"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "mcp>=1.2.0",
     "mss>=10.1.0",
     "pillow>=12.2.0",
     "pyautogui>=0.9.54",
