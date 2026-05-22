@@ -1,5 +1,3 @@
-"""Vision-model helpers for click-target finding and action verification."""
-
 import base64
 import json
 from io import BytesIO

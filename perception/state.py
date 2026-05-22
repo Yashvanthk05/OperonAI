@@ -70,7 +70,7 @@ def elements_to_text(elements: List[UIElement], max_items: int = 50) -> str:
         return "(no interactive elements)"
 
     for i, el in enumerate(elements[:max_items]):
-        # Keep the representation minimal and highly readable for LLM
+        
         lines.append(
             f"[{i}] type='{_safe_text(el.control_type)}' "
             f"name='{_safe_text(el.name)}'"
